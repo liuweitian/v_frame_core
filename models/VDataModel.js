@@ -51,7 +51,9 @@ export default class VDataModel {
      * @returns {Array}
      */
     getRules() {
-        return []
+        return [
+            { attributes: [ 'id' ], validator: 'Required' }
+        ]
     }
 
     /**
@@ -197,6 +199,25 @@ export default class VDataModel {
     }
 
     /**
+     * 设置属性值
+     * @param {string} attribute
+     * @param {*} value
+     */
+    setAttribute(attribute, value) {
+        this[ attribute ] = value
+    }
+
+    /**
+     * 批量设置属性值
+     * @param {object} values
+     */
+    setAttributes(values) {
+        for ( let attr in values ) {
+            this.setAttribute( attr, values[attr] )
+        }
+    }
+
+    /**
      * 获取调用列表接口时参数
      * @returns {Object}
      */
@@ -255,5 +276,13 @@ export default class VDataModel {
         return new Promise(resolve => {
             resolve();
         })
+    }
+
+    /**
+     * 获取模型表单需要的配置信息
+     * @returns {Object}
+     */
+    getFormConfig() {
+        return {}
     }
 }
