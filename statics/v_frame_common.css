@@ -13,24 +13,38 @@
 .text-danger {
     color: #F1261F;
 }
-.text-black {
-    color: #000;
+.text-black-1 {
+    color: rgba(0, 0, 0, .1);
+}
+.text-black-2 {
+    color: rgba(0, 0, 0, .2);
+}
+.text-black-3 {
+    color: rgba(0, 0, 0, .3);
+}
+.text-black-4 {
+    color: rgba(0, 0, 0, .4);
+}
+.text-black-5 {
+    color: rgba(0, 0, 0, .5);
+}
+.text-black-6 {
+    color: rgba(0, 0, 0, .6);
+}
+.text-black-7 {
+    color: rgba(0, 0, 0, .7);
+}
+.text-black-8 {
+    color: rgba(0, 0, 0, .8);
+}
+.text-black-9 {
+    color: rgba(0, 0, 0, .9);
+}
+.text-black-10 {
+    color: rgba(0, 0, 0, .10);
 }
 .text-white {
     color: #fff;
-}
-
-.text-title {
-    color: #303133;
-}
-.text-content {
-    color: #606266;
-}
-.text-regular {
-    color: #909399;
-}
-.text-placeholder {
-    color: #C0C4CC;
 }
 
 .bgg-primary {

@@ -1,3 +1,5 @@
+import BaseValidator from "./validator/BaseValidator";
+
 export default class VDataModel {
     /**
      * 列表接口
@@ -186,8 +188,16 @@ export default class VDataModel {
      * 最终返回是否存在错误，错误信息可通过 this.getErrors()、this.getOneError() 或 this.getError() 等方法获取
      * @returns {boolean}
      */
-    runValidate() {
-        return true;
+    validate() {
+
+        let rules = this.getRules()
+        for ( let ruleItem of rules ) {
+            for ( let attribute of ruleItem.attributes ) {
+                BaseValidator.do( this, attribute, ruleItem )
+            }
+        }
+
+        return this.getHasErrors()
     }
 
     /**
