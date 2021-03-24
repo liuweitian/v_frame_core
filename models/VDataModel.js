@@ -26,10 +26,10 @@ export default class VDataModel {
      * 数据格式化配置
      * @type {Object}
      */
-    $format = {}
+    $formats = {}
 
     /**
-     * 主键字段名
+     * 主键属性名
      * 修改这个属性的值，会影响 getId 方法的返回值
      * @type {string}
      */
@@ -46,6 +46,14 @@ export default class VDataModel {
      * @type {Array}
      */
     #$errors = []
+
+    /**
+     * 属性名列表
+     * 通过 setValue 和 setValue 方法添加的属性名，会自动记录到这里
+     * 通过 getAttributeNames 方法获取这个属性值
+     * @type {[]}
+     */
+    #attributes = []
 
     /**
      * 获取数据校验规则
@@ -80,12 +88,69 @@ export default class VDataModel {
     }
 
     /**
+     * 获取源数据值
+     * 源数据的值将直接返回模型对应的属性值
+     * @param {array} attributes 属性名
+     * @returns {*}
+     */
+    getSources(attributes) {
+        let values = {}
+        for (let attr of attributes) {
+            values[attr] = this.getSource(attr)
+        }
+        return values
+    }
+
+    /**
      * 获取格式化后的数据值
      * @param {string} attribute 属性名
      * @returns {*}
      */
     getValue(attribute) {
-        throw new Error('待实现')
+        // 获取原始数据
+        let source = this.getSource(attribute)
+        // 带后缀的原始数据
+        let postfixValue = this.getSource(attribute + this.$attributePostfix)
+
+        // 获取格式器
+        let format = this.$formats[attribute]
+
+        if( typeof format === 'object' ) {
+            let Formatter = format.formatter
+            let formatterValue = undefined
+            if( typeof Formatter === 'function' ) {
+                let formatter = new Formatter()
+                formatter.setModel(this)
+                formatter.setAttribute(attribute)
+                formatter.setOptions( format.formatterOptions )
+                formatterValue = formatter.getValue()
+            }
+            // 根据格式配置配置的 value 属性，进行数据格式化
+            switch (typeof format.value) {
+                /**
+                 * 闭包参数：
+                 * source: 原始字段值
+                 * postfixValue: 带后缀的字段原始值
+                 * formatterValue: 使用格式器处理后的值
+                 */
+                case 'function':
+                    source = format.value(source, postfixValue, formatterValue)
+                    break
+                case 'object':
+                    source = format.value[source]
+                    break
+                default:
+                    if( typeof Formatter === 'function' ) {
+                        source = formatterValue
+                    }
+            }
+        } else {
+            if( this.getHasAttribute(attribute + this.$attributePostfix) ) {
+                source = postfixValue
+            }
+        }
+
+        return source
     }
 
     /**
@@ -94,7 +159,8 @@ export default class VDataModel {
      * @param {*} value
      */
     setValue(attribute, value) {
-        throw new Error('待实现')
+        this._pushAttribute(attribute)
+        this[attribute] = value
     }
 
     /**
@@ -102,7 +168,9 @@ export default class VDataModel {
      * @param {array} attributes 属性名
      * @returns {object}
      */
-    getValues(attributes = []) {
+    getValues(attributes) {
+        attributes = attributes || this.getAttributeNames()
+
         let values = {}
         for ( let attr of attributes ) {
             values[attr] = this.getValue(attr)
@@ -116,8 +184,43 @@ export default class VDataModel {
      */
     setValues(values) {
         for ( let attr in values ) {
+            this._pushAttribute(attr)
             this.setValue( attr, values[attr] )
         }
+    }
+
+    /**
+     * 将属性名添加进列表中
+     * @param {string} attribute
+     */
+    _pushAttribute(attribute) {
+        this.#attributes.indexOf(attribute) === -1 && this.#attributes.push(attribute)
+    }
+
+    /**
+     * 获取属性名列表
+     * @returns {*[]}
+     */
+    getAttributeNames() {
+        return this.#attributes
+    }
+
+    /**
+     * 返回该属性是否存在
+     * @param {string} attribute
+     * @returns {boolean}
+     */
+    getHasAttribute(attribute) {
+        return this.#attributes.indexOf(attribute) !== -1
+    }
+
+    /**
+     * 返回属性别名列表
+     * 例如：{"id":"Id","name":"姓名"}
+     * @returns {Object}
+     */
+    attributeLabels() {
+        return {}
     }
 
     /**
@@ -139,15 +242,6 @@ export default class VDataModel {
             },
             body: this.getValues()
         }
-    }
-
-    /**
-     * 返回属性展示名列表
-     * 例如：{"id":"Id","name":"姓名"}
-     * @returns {Object}
-     */
-    attributeLabels() {
-        return {}
     }
 
     /**
@@ -244,14 +338,12 @@ export default class VDataModel {
      * @returns {boolean}
      */
     validate() {
-
         let rules = this.getRules()
         for ( let ruleItem of rules ) {
             for ( let attribute of ruleItem.attributes ) {
                 BaseValidator.do( this, attribute, ruleItem )
             }
         }
-
         return this.getHasErrors()
     }
 
