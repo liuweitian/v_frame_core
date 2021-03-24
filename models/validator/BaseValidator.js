@@ -76,7 +76,7 @@ export default class BaseValidator {
         return message
     }
 
-    async static do(model, attribute, ruleItem) {
+    static async do(model, attribute, ruleItem) {
         let validator = undefined
 
         switch (typeof ruleItem.validator) {

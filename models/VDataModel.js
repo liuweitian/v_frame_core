@@ -50,12 +50,14 @@ export default class VDataModel {
     /**
      * 获取数据校验规则
      * 可配合 validator 中的数据校验器进行数据校验
+     * 格式：
+     * [
+     *      { attributes: [ 'id' ], validator: 'Required' }
+     * ]
      * @returns {Array}
      */
     getRules() {
-        return [
-            { attributes: [ 'id' ], validator: 'Required' }
-        ]
+        return []
     }
 
     /**
@@ -64,7 +66,7 @@ export default class VDataModel {
      * @returns {*}
      */
     getId() {
-        return this.getSourceValue( this.$primaryKey )
+        return this.getSource( this.$primaryKey )
     }
 
     /**
@@ -73,7 +75,7 @@ export default class VDataModel {
      * @param {string} attribute 属性名
      * @returns {*}
      */
-    getSourceValue(attribute) {
+    getSource(attribute) {
         return this[attribute]
     }
 
@@ -83,15 +85,68 @@ export default class VDataModel {
      * @returns {*}
      */
     getValue(attribute) {
-        return 1;
+        throw new Error('待实现')
     }
 
     /**
-     * 获取属性名列表
+     * 设置属性值
+     * @param {string} attribute
+     * @param {*} value
+     */
+    setValue(attribute, value) {
+        throw new Error('待实现')
+    }
+
+    /**
+     * 获取格式化后的数据值
+     * @param {array} attributes 属性名
+     * @returns {object}
+     */
+    getValues(attributes = []) {
+        let values = {}
+        for ( let attr of attributes ) {
+            values[attr] = this.getValue(attr)
+        }
+        return values
+    }
+
+    /**
+     * 批量设置属性值
+     * @param {object} values
+     */
+    setValues(values) {
+        for ( let attr in values ) {
+            this.setValue( attr, values[attr] )
+        }
+    }
+
+    /**
+     * 获取调用列表接口时参数
+     * @returns {Object}
+     */
+    getListRequestParams() {
+        return this.getValues()
+    }
+
+    /**
+     * 获取调用操作接口时的参数
+     * @returns {{get: Object, body: Object}}
+     */
+    getActionRequestParams() {
+        return {
+            get: {
+                id: this.getId(),
+            },
+            body: this.getValues()
+        }
+    }
+
+    /**
+     * 返回属性展示名列表
      * 例如：{"id":"Id","name":"姓名"}
      * @returns {Object}
      */
-    getAttributeLabels() {
+    attributeLabels() {
         return {}
     }
 
@@ -103,7 +158,7 @@ export default class VDataModel {
      * @returns {*}
      */
     getLabel(attribute) {
-        return this.getAttributeLabels()[ attribute ] || attribute.split('_')
+        return this.attributeLabels()[ attribute ] || attribute.split('_')
             .map(d => {
                 d = d.split('')
                 d[0] = d[0].toUpperCase()
@@ -198,54 +253,6 @@ export default class VDataModel {
         }
 
         return this.getHasErrors()
-    }
-
-    /**
-     * 获取所有属性值
-     * @returns {Object}
-     */
-    getAttributes() {
-        return {}
-    }
-
-    /**
-     * 设置属性值
-     * @param {string} attribute
-     * @param {*} value
-     */
-    setAttribute(attribute, value) {
-        this[ attribute ] = value
-    }
-
-    /**
-     * 批量设置属性值
-     * @param {object} values
-     */
-    setAttributes(values) {
-        for ( let attr in values ) {
-            this.setAttribute( attr, values[attr] )
-        }
-    }
-
-    /**
-     * 获取调用列表接口时参数
-     * @returns {Object}
-     */
-    getListRequest() {
-        return this.getAttributes()
-    }
-
-    /**
-     * 获取调用操作接口时的参数
-     * @returns {{get: Object, body: Object}}
-     */
-    getActionRequest() {
-        return {
-            get: {
-                id: this.getId(),
-            },
-            body: this.getAttributes()
-        }
     }
 
     /**

@@ -1,6 +1,6 @@
 {
   "name": "v_frame_core",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "VF核心代码",
   "main": "index.js",
   "scripts": {
